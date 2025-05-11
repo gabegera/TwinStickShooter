@@ -19,6 +19,8 @@ void ACustomPlayerController::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 	Input->BindAction(Input_Shoot, ETriggerEvent::Triggered, this, &ACustomPlayerController::Shoot);
 	Input->BindAction(Input_Shoot, ETriggerEvent::Completed, this, &ACustomPlayerController::ReleaseShoot);
+	
+	Input->BindAction(Input_Reload, ETriggerEvent::Triggered, this, &ACustomPlayerController::ReloadWeapon);
 
 	Input->BindAction(Input_NextWeapon, ETriggerEvent::Triggered, this, &ACustomPlayerController::EquipNextWeapon);
 }
@@ -43,6 +45,8 @@ void ACustomPlayerController::BeginPlay()
 
 void ACustomPlayerController::Move(const FInputActionInstance& Instance)
 {
+	if (GetWorldTimerManager().IsTimerActive(GetCustomCharacter()->GetDashTimer())) return;
+	
 	FVector2D Value = Instance.GetValue().Get<FVector2D>();
 	
 	GetCharacter()->AddMovementInput(FVector::RightVector, Value.X);
@@ -56,7 +60,7 @@ void ACustomPlayerController::Move(const FInputActionInstance& Instance)
 
 void ACustomPlayerController::Dodge()
 {
-	
+	GetCustomCharacter()->Dash();
 }
 
 void ACustomPlayerController::Parry()
@@ -80,12 +84,22 @@ void ACustomPlayerController::Aim(const FInputActionInstance& Instance)
 
 void ACustomPlayerController::Shoot()
 {
+	if (GetCustomCharacter()->GetEquippedWeapon()->GetAmmoInMagazine() <= 0 && ShouldReloadOnFire)
+	{
+		GetCustomCharacter()->ReloadWeapon();
+	}
+	
 	GetCustomCharacter()->UseWeapon();
 }
 
 void ACustomPlayerController::ReleaseShoot()
 {
 	GetCustomCharacter()->StopUsingWeapon();
+}
+
+void ACustomPlayerController::ReloadWeapon()
+{
+	GetCustomCharacter()->ReloadWeapon();
 }
 
 void ACustomPlayerController::EquipNextWeapon()

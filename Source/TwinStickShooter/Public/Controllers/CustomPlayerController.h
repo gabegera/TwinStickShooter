@@ -42,9 +42,16 @@ protected:
 	UInputAction* Input_Shoot;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* Input_Reload;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* Input_NextWeapon;
 
 	bool isAiming = false;
+
+	// If true, when the weapon's magazine is out of ammo it will reload when you try to fire the weapon.
+	UPROPERTY(EditAnywhere, Category = "Input")
+	bool ShouldReloadOnFire = true;
 	
 	virtual void BeginPlay() override;
 
@@ -64,6 +71,8 @@ public:
 	void Shoot();
 
 	void ReleaseShoot();
+
+	void ReloadWeapon();
 
 	void EquipNextWeapon();
 

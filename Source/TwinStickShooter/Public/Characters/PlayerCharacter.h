@@ -22,6 +22,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UCameraComponent* Camera;
 
+	UPROPERTY(EditAnywhere)
+	bool bShowDebugLogs = true;
+
 public:
 
 	virtual void Tick(float DeltaSeconds) override;

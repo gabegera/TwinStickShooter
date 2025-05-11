@@ -25,15 +25,32 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UArrowComponent* Arrow;
 
-	UPROPERTY(EditAnywhere, Category="Weapon")
+	// ------ AMMO ------
+
+	// How much ammo is available for a reload.
+	UPROPERTY(EditAnywhere, Category="Ammo")
 	int32 Ammo;
 
-	UPROPERTY(EditAnywhere, Category="Weapon")
+	// How much ammo the magazine can hold.
+	UPROPERTY(EditAnywhere, Category="Ammo")
 	int32 MagazineCapacity;
 
+	// How much ammo is currently in the magazine.
 	UPROPERTY()
 	int32 AmmoInMagazine;
 
+	// How long it takes to reload the weapon.
+	UPROPERTY(EditAnywhere, Category="Ammo")
+	float ReloadTime = 1.0f;
+	
+	UPROPERTY()
+	FTimerHandle ReloadTimer;
+
+	// ------ WEAPON VARIABLES ------
+
+	UPROPERTY(EditAnywhere, Category="Weapon")
+	FString DisplayName = "Unnamed Weapon";
+	
 	// The Projectile that this weapon fires.
 	UPROPERTY(EditAnywhere, Category="Weapon")
 	TSubclassOf<AProjectile> Projectile;
@@ -71,6 +88,15 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ShootProjectile();
+
+	UFUNCTION(BlueprintCallable)
+	void Reload();
+
+	UFUNCTION(BlueprintCallable)
+	void CancelReload();
+
+	UFUNCTION()
+	void FinishReload();
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -79,7 +105,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float RPMToSeconds(float FireRate) { return 1 / (FireRate / 60); }
-
 
 	// ------ GETTERS ------
 
@@ -90,11 +115,31 @@ public:
 	UArrowComponent* GetArrowComponent() const { return Arrow; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FString GetDisplayName() { return DisplayName; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetAmmoInMagazine() const { return AmmoInMagazine; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetMagazineCapacity() const { return MagazineCapacity; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int32 GetAmmo() const { return Ammo + AmmoInMagazine;}
+	int32 GetAmmo() const { return Ammo;}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetTotalAmmo() const { return Ammo + AmmoInMagazine;}
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool IsReloading() { return GetWorldTimerManager().IsTimerActive(ReloadTimer); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetRemainingReloadTime() { return GetWorldTimerManager().GetTimerRemaining(ReloadTimer); }
+
+	// ------ SETTERS ------
+
+	UFUNCTION(BlueprintCallable)
+	int32 SetAmmo(int32 NewAmmo) { return Ammo = NewAmmo; }
+
+	UFUNCTION(BlueprintCallable)
+	int32 SetAmmoInMagazine(int32 NewAmmo) { return AmmoInMagazine = NewAmmo; }
 };
