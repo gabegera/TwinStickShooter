@@ -22,11 +22,11 @@ void APlayerCharacter::Tick(float DeltaSeconds)
 	if (bShowDebugLogs == true)
 	{
 		// Debug message to show how much ammo the equipped weapon has.
-		GEngine->AddOnScreenDebugMessage(900, 1.0f, FColor::Green,
+		if (EquippedWeapon) GEngine->AddOnScreenDebugMessage(900, 1.0f, FColor::Green,
 		"Ammo: " + FString::FromInt(EquippedWeapon->GetAmmoInMagazine()) + " / " +  FString::FromInt(EquippedWeapon->GetAmmo()));
 		
 		// Debug message to show if the weapon is currently reloading.
-		if (EquippedWeapon->IsReloading())
+		if (EquippedWeapon && EquippedWeapon->IsReloading())
 		{
 			GEngine->AddOnScreenDebugMessage(901, EquippedWeapon->GetRemainingReloadTime(), FColor::Orange,
 				"Reloading: " + FString::SanitizeFloat(EquippedWeapon->GetRemainingReloadTime()));

@@ -23,6 +23,8 @@ void ACustomPlayerController::SetupPlayerInputComponent(UInputComponent* PlayerI
 	Input->BindAction(Input_Reload, ETriggerEvent::Triggered, this, &ACustomPlayerController::ReloadWeapon);
 
 	Input->BindAction(Input_NextWeapon, ETriggerEvent::Triggered, this, &ACustomPlayerController::EquipNextWeapon);
+
+	Input->BindAction(Input_Interact, ETriggerEvent::Triggered, this, &ACustomPlayerController::Interact);
 }
 
 void ACustomPlayerController::BeginPlay()
@@ -48,6 +50,7 @@ void ACustomPlayerController::Move(const FInputActionInstance& Instance)
 	if (GetWorldTimerManager().IsTimerActive(GetCustomCharacter()->GetDashTimer())) return;
 	
 	FVector2D Value = Instance.GetValue().Get<FVector2D>();
+	MovementDirection = FVector(Value.Y, Value.X, 0);
 	
 	GetCharacter()->AddMovementInput(FVector::RightVector, Value.X);
 	GetCharacter()->AddMovementInput(FVector::ForwardVector, Value.Y);
@@ -60,7 +63,7 @@ void ACustomPlayerController::Move(const FInputActionInstance& Instance)
 
 void ACustomPlayerController::Dodge()
 {
-	GetCustomCharacter()->Dash();
+	GetCustomCharacter()->Dash(MovementDirection);
 }
 
 void ACustomPlayerController::Parry()
@@ -84,7 +87,7 @@ void ACustomPlayerController::Aim(const FInputActionInstance& Instance)
 
 void ACustomPlayerController::Shoot()
 {
-	if (GetCustomCharacter()->GetEquippedWeapon()->GetAmmoInMagazine() <= 0 && ShouldReloadOnFire)
+	if (GetCustomCharacter()->GetEquippedWeapon() && GetCustomCharacter()->GetEquippedWeapon()->GetAmmoInMagazine() <= 0 && ShouldReloadOnFire)
 	{
 		GetCustomCharacter()->ReloadWeapon();
 	}
@@ -105,6 +108,11 @@ void ACustomPlayerController::ReloadWeapon()
 void ACustomPlayerController::EquipNextWeapon()
 {
 	GetCustomCharacter()->EquipNextWeapon();
+}
+
+void ACustomPlayerController::Interact()
+{
+	GetCustomCharacter()->Interact();
 }
 
 // ------ GETTERS ------

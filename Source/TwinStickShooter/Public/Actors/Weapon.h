@@ -6,6 +6,7 @@
 #include "Projectile.h"
 #include "Components/ArrowComponent.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
 #include "Weapon.generated.h"
 
 UCLASS()
@@ -30,6 +31,10 @@ protected:
 	// How much ammo is available for a reload.
 	UPROPERTY(EditAnywhere, Category="Ammo")
 	int32 Ammo;
+
+	// How much ammo can be carried at one time.
+	UPROPERTY(EditAnywhere, Category="Ammo")
+	int32 MaxAmmo;
 
 	// How much ammo the magazine can hold.
 	UPROPERTY(EditAnywhere, Category="Ammo")
@@ -59,7 +64,14 @@ protected:
 	float Damage = 10.0f;
 
 	UPROPERTY(EditAnywhere, Category="Weapon")
-	float ProjectileSpeed = 1000.0f;
+	float ProjectileSpeed = 2000.0f;
+
+	UPROPERTY(EditAnywhere, Category="Weapon")
+	float ProjectileSpread = 2.0f;
+
+	// How many projectiles are spawned when the weapon is fired.
+	UPROPERTY(EditAnywhere, Category="Weapon", meta=(UIMin=1, ClampMin=1))
+	int32 ProjectileCount = 1;
 
 	UPROPERTY(EditAnywhere, Category="Weapon")
 	bool isAutomatic = false;
@@ -97,6 +109,9 @@ public:
 
 	UFUNCTION()
 	void FinishReload();
+
+	UFUNCTION(BlueprintCallable)
+	void SetWeaponCollision(bool Input);
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -127,6 +142,9 @@ public:
 	int32 GetAmmo() const { return Ammo;}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetMaxAmmo() const { return MaxAmmo; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetTotalAmmo() const { return Ammo + AmmoInMagazine;}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -135,7 +153,16 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetRemainingReloadTime() { return GetWorldTimerManager().GetTimerRemaining(ReloadTimer); }
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool CanBePickedUp() { return !GetAttachParentActor(); }
+
 	// ------ SETTERS ------
+
+	UFUNCTION(BlueprintCallable)
+	int32 AddAmmo(int32 AmmoToAdd) { return Ammo += AmmoToAdd; }
+
+	UFUNCTION(BlueprintCallable)
+	int32 RemoveAmmo(int32 AmmoToSubtract) { return Ammo -= AmmoToSubtract; }
 
 	UFUNCTION(BlueprintCallable)
 	int32 SetAmmo(int32 NewAmmo) { return Ammo = NewAmmo; }

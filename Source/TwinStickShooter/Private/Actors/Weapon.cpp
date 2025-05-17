@@ -13,10 +13,12 @@ AWeapon::AWeapon()
 
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
 	SkeletalMesh->SetupAttachment(RootComponent);
+	SkeletalMesh->SetCollisionProfileName("Weapon");
+	SkeletalMesh->SetGenerateOverlapEvents(true);
+	SkeletalMesh->CanCharacterStepUpOn = ECB_No;
 
 	Arrow = CreateDefaultSubobject<UArrowComponent>(TEXT("Arrow"));
 	Arrow->SetupAttachment(SkeletalMesh);
-
 }
 
 // Called when the game starts or when spawned
@@ -51,13 +53,18 @@ void AWeapon::ReleaseFire()
 void AWeapon::ShootProjectile()
 {
 	if (Projectile == nullptr) return;
+
+	if (ProjectileCount < 1) ProjectileCount = 1;
+	for (int32 i = 0; i < ProjectileCount; i++)
+	{
+		AProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(Projectile);
+    
+        SpawnedProjectile->SetActorLocation(GetArrowComponent()->GetComponentLocation());
+        SpawnedProjectile->GetProjectileMovement()->Velocity = Arrow->GetForwardVector().RotateAngleAxis(FMath::RandRange(-ProjectileSpread, ProjectileSpread), GetActorUpVector()) * ProjectileSpeed;
+        SpawnedProjectile->SetDamage(Damage);
+	}
 	
-	AProjectile* SpawnedProjectile = GetWorld()->SpawnActor<AProjectile>(Projectile);
-
-	SpawnedProjectile->SetActorLocation(GetArrowComponent()->GetComponentLocation());
-	SpawnedProjectile->GetProjectileMovement()->Velocity = Arrow->GetForwardVector() * ProjectileSpeed;
-	SpawnedProjectile->SetDamage(Damage);
-
+	
 	AmmoInMagazine -= 1;
 }
 
@@ -91,11 +98,30 @@ void AWeapon::FinishReload()
 	}
 }
 
+void AWeapon::SetWeaponCollision(bool Input)
+{
+	if (Input == true)
+	{
+		SkeletalMesh->SetCollisionProfileName("Weapon");
+		SkeletalMesh->SetSimulatePhysics(true);
+		SkeletalMesh->SetGenerateOverlapEvents(true);
+	}
+	else
+	{
+		SkeletalMesh->SetSimulatePhysics(false);
+		SkeletalMesh->SetCollisionProfileName("NoCollision");
+		SkeletalMesh->SetGenerateOverlapEvents(false);
+	}
+}
+
 // Called every frame
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	DrawDebugLine(GetWorld(), Arrow->GetComponentLocation(), Arrow->GetComponentLocation() + Arrow->GetForwardVector() * 100.0f, FColor::Red);
+	if (CanBePickedUp() == false && IsHidden() == false)
+	{
+		DrawDebugLine(GetWorld(), Arrow->GetComponentLocation(), Arrow->GetComponentLocation() + Arrow->GetForwardVector() * 100.0f, FColor::Red);
+	}
 }
 

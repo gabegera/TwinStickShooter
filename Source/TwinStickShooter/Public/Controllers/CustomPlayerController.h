@@ -47,6 +47,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	UInputAction* Input_NextWeapon;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	UInputAction* Input_Interact;
+
+	FVector MovementDirection = FVector::ZeroVector;
+
 	bool isAiming = false;
 
 	// If true, when the weapon's magazine is out of ammo it will reload when you try to fire the weapon.
@@ -75,6 +80,8 @@ public:
 	void ReloadWeapon();
 
 	void EquipNextWeapon();
+
+	void Interact();
 
 
 	// ------ GETTERS ------

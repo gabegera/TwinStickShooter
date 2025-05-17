@@ -19,6 +19,12 @@ public:
 
 protected:
 
+	UPROPERTY(EditAnywhere)
+	USphereComponent* SphereCollider;
+
+	UPROPERTY()
+	AActor* NearestInteractable;
+
 	// ------ WEAPONS ------
 
 	UPROPERTY(EditAnywhere, Category="Weapons")
@@ -29,7 +35,6 @@ protected:
 	
 	UPROPERTY()
 	TArray<AWeapon*> Weapons;
-	
 
 	UPROPERTY()
 	AWeapon* EquippedWeapon = nullptr;
@@ -49,19 +54,16 @@ protected:
 	FTimerHandle DashCooldownTimer;
 
 	// How long the dash will last.
-	UPROPERTY(EditAnywhere, Category="Movement")
+	UPROPERTY(EditAnywhere, Category="Movement|Dash")
 	float DashTime = 0.2f;
 
 	// How fast the character will move during the dash period.
-	UPROPERTY(EditAnywhere, Category="Movement")
+	UPROPERTY(EditAnywhere, Category="Movement|Dash")
 	float DashSpeed = 3000.0f;
 
-	UPROPERTY(EditAnywhere, Category="Movement")
+	UPROPERTY(EditAnywhere, Category="Movement|Dash")
 	float DashCooldown = 0.1f;
-
-	// UPROPERTY(EditAnywhere, Category="Movement")
-	// float DashStaminaCost = 33.33f;
-
+	
 	// ----- CHARACTER VARIABLES ------
 
 	UPROPERTY(EditAnywhere, Category="Custom Character")
@@ -70,12 +72,6 @@ protected:
 	UPROPERTY()
 	float CurrentHealth = 0;
 
-	// UPROPERTY(EditAnywhere, Category="Custom Character")
-	// float MaxStamina = 100;
-	//
-	// UPROPERTY()
-	// float CurrentStamina = 0;
-
 	// ------ FUNCTIONS ------
 	
 	// Called when the game starts or when spawned
@@ -83,10 +79,16 @@ protected:
 
 	virtual void OnConstruction(const FTransform& Transform) override;
 
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 public:
 
 	UFUNCTION(BlueprintCallable)
-	void Dash();
+	void Dash(FVector DashDirection);
 
 	UFUNCTION()
 	void UpdateDash(FVector DashDirectionAndSpeed);
@@ -103,14 +105,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ReloadWeapon();
 
+	// Will spawn a new weapon and attach it to the character.
 	UFUNCTION(BlueprintCallable)
 	AWeapon* SpawnWeapon(TSubclassOf<AWeapon> WeaponToSpawn);
 
+	// Equips the next weapon available in the Weapons Array.
 	UFUNCTION(BlueprintCallable)
 	void EquipNextWeapon();
-
+	
 	UFUNCTION(BlueprintCallable)
 	void EquipWeapon(AWeapon* NewWeapon);
+
+	UFUNCTION(BlueprintCallable)
+	void PickupWeapon(AWeapon* NewWeapon);
+
+	UFUNCTION(BlueprintCallable)
+	void Interact();
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
