@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Characters/CustomCharacter.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "EnhancedInputComponent.h"
+#include "Characters/PlayerCharacter.h"
 #include "CustomPlayerController.generated.h"
 
 UCLASS()
@@ -16,9 +16,8 @@ class TWINSTICKSHOOTER_API ACustomPlayerController : public APlayerController
 	GENERATED_BODY()
 
 protected:
-
-	UPROPERTY()
-	ACustomCharacter* PossessedCustomCharacter = nullptr;
+	
+	UPROPERTY() APlayerCharacter* PossessedPlayerCharacter = nullptr;
 
 	// ------ INPUT ------
 	
@@ -26,29 +25,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TSoftObjectPtr<UInputMappingContext> InputMapping;
 
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* Input_Move;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* Input_Dodge;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* Input_Parry;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* Input_Aim;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* Input_Shoot;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* Input_Reload;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* Input_NextWeapon;
-
-	UPROPERTY(EditAnywhere, Category = "Input")
-	UInputAction* Input_Interact;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* Input_Move;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* Input_Dodge;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* Input_LightAttack;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* Input_HeavyAttack;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* Input_Parry;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* Input_Aim;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* Input_Shoot;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* Input_Reload;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* Input_NextWeapon;
+	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* Input_Interact;
 
 	FVector MovementDirection = FVector::ZeroVector;
 
@@ -69,6 +55,10 @@ public:
 
 	void Dodge();
 
+	void LightAttack();
+
+	void HeavyAttack();
+
 	void Parry();
 
 	void Aim(const FInputActionInstance& Instance);
@@ -87,5 +77,5 @@ public:
 	// ------ GETTERS ------
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Getters")
-	ACustomCharacter* GetCustomCharacter();
+	APlayerCharacter* GetPlayerCharacter();
 };

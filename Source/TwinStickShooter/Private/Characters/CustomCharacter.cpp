@@ -26,16 +26,16 @@ void ACustomCharacter::BeginPlay()
 	CurrentHealth = MaxHealth;
 
 	// Adds the starting weapons to the player inventory.
-	TArray StartingWeaponsArray = StartingWeapons.Array();
-	Weapons.Empty();
+	TArray StartingWeaponsArray = StartingRangedWeapons.Array();
+	RangedWeapons.Empty();
 	for (int32 i = 0; i < StartingWeaponsArray.Num(); i++)
 	{
-		Weapons.Add(SpawnWeapon(StartingWeaponsArray[i]));
+		RangedWeapons.Add(SpawnRangedWeapon(StartingWeaponsArray[i]));
 	}
 
-	if (EquippedWeapon == nullptr && Weapons.IsEmpty() == false)
+	if (EquippedRangedWeapon == nullptr && RangedWeapons.IsEmpty() == false)
 	{
-		EquipWeapon(Weapons[0]);
+		EquipWeapon(RangedWeapons[0]);
 	}
 }
 
@@ -43,7 +43,7 @@ void ACustomCharacter::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	// while (StartingWeapons.Num() > MaxWeaponCapacity) StartingWeapons.Remove(StartingWeapons.Array().Last());
+	// while (StartingRangedWeapons.Num() > MaxWeaponCapacity) StartingRangedWeapons.Remove(StartingRangedWeapons.Array().Last());
 }
 
 void ACustomCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -54,33 +54,32 @@ void ACustomCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, 
 	else if (GetDistanceTo(NearestInteractable) > GetDistanceTo(OtherActor)) NearestInteractable = OtherActor;
 
 	
-	
-	if (OtherActor->FindNearestCommonBaseClass(AWeapon::StaticClass()) == AWeapon::StaticClass())
+	if (OtherActor->FindNearestCommonBaseClass(ARangedWeapon::StaticClass()) == ARangedWeapon::StaticClass())
 	{
-		AWeapon* OverlappedWeapon = Cast<AWeapon>(OtherActor);
+		ARangedWeapon* OverlappedWeapon = Cast<ARangedWeapon>(OtherActor);
 
 		// If carrying a weapon of the same type on the ground, pick up its ammo.
-		for (int32 i = 0; i < Weapons.Num(); i++)
+		for (int32 i = 0; i < RangedWeapons.Num(); i++)
 		{
-			if (Weapons[i]->GetClass() != OverlappedWeapon->GetClass()) continue;
+			if (RangedWeapons[i]->GetClass() != OverlappedWeapon->GetClass()) continue;
 
 			// If the additional ammo won't go over the limit, pick it all up.
-			if (Weapons[i]->GetAmmo() + OverlappedWeapon->GetAmmo() <= Weapons[i]->GetMaxAmmo())
+			if (RangedWeapons[i]->GetAmmo() + OverlappedWeapon->GetAmmo() <= RangedWeapons[i]->GetMaxAmmo())
 			{
-				Weapons[i]->AddAmmo(OverlappedWeapon->GetAmmo());
+				RangedWeapons[i]->AddAmmo(OverlappedWeapon->GetAmmo());
 				OverlappedWeapon->SetAmmo(0);
 				return;
 			}
 			else // If the ammo goes over the maximum limit, pickup what fits.
 			{
-				int32 AmmoSpaceAvailable = Weapons[i]->GetMaxAmmo() - Weapons[i]->GetAmmo();
-				Weapons[i]->AddAmmo(AmmoSpaceAvailable);
+				int32 AmmoSpaceAvailable = RangedWeapons[i]->GetMaxAmmo() - RangedWeapons[i]->GetAmmo();
+				RangedWeapons[i]->AddAmmo(AmmoSpaceAvailable);
 				OverlappedWeapon->RemoveAmmo(AmmoSpaceAvailable);
 				return;
 			}
 		}
 		
-		if (Weapons.Num() < MaxWeaponCapacity && OverlappedWeapon->CanBePickedUp()) PickupWeapon(OverlappedWeapon);
+		if (RangedWeapons.Num() < MaxWeaponCapacity && OverlappedWeapon->CanBePickedUp()) PickupWeapon(OverlappedWeapon);
 	}
 }
 
@@ -125,28 +124,29 @@ void ACustomCharacter::StopDash()
 
 void ACustomCharacter::UseWeapon()
 {
-	if (EquippedWeapon == nullptr) return;
+	if (EquippedRangedWeapon == nullptr) return;
 
-	EquippedWeapon->Fire();
+	EquippedRangedWeapon->SetInstigator(this);
+	EquippedRangedWeapon->Fire();
 }
 
 void ACustomCharacter::StopUsingWeapon()
 {
-	if (EquippedWeapon == nullptr) return;
+	if (EquippedRangedWeapon == nullptr) return;
 
-	EquippedWeapon->ReleaseFire();
+	EquippedRangedWeapon->ReleaseFire();
 }
 
 void ACustomCharacter::ReloadWeapon()
 {
-	if (EquippedWeapon == nullptr) return;
+	if (EquippedRangedWeapon == nullptr) return;
 	
-	EquippedWeapon->Reload();
+	EquippedRangedWeapon->Reload();
 }
 
-AWeapon* ACustomCharacter::SpawnWeapon(TSubclassOf<AWeapon> WeaponToSpawn)
+ARangedWeapon* ACustomCharacter::SpawnRangedWeapon(TSubclassOf<ARangedWeapon> WeaponToSpawn)
 {
-	AWeapon* SpawnedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponToSpawn);
+	ARangedWeapon* SpawnedWeapon = GetWorld()->SpawnActor<ARangedWeapon>(WeaponToSpawn);
 	
 	SpawnedWeapon->SetActorHiddenInGame(true);
 	SpawnedWeapon->SetWeaponCollision(false);
@@ -160,18 +160,18 @@ AWeapon* ACustomCharacter::SpawnWeapon(TSubclassOf<AWeapon> WeaponToSpawn)
 void ACustomCharacter::EquipNextWeapon()
 {
 	// If there is no weapon equipped then equip the first weapon available.
-	if (EquippedWeapon == nullptr)
+	if (EquippedRangedWeapon == nullptr)
 	{
-		EquipWeapon(Weapons[0]);
+		EquipWeapon(RangedWeapons[0]);
 
 		return;
 	}
 
 	// Finds where the next weapon in the array is located.
 	int32 NextWeaponIndex = 0;
-	for (int32 i = 0; i < Weapons.Num(); i++)
+	for (int32 i = 0; i < RangedWeapons.Num(); i++)
 	{
-		if (Weapons[i]->GetClass() == EquippedWeapon->GetClass())
+		if (RangedWeapons[i]->GetClass() == EquippedRangedWeapon->GetClass())
 		{
 			NextWeaponIndex = i + 1;
 			break;
@@ -179,35 +179,35 @@ void ACustomCharacter::EquipNextWeapon()
 	}
 	
 	// Equips the next weapon in the array. If the next weapon is outside the bounds of the array then equips the first weapon.
-	if (NextWeaponIndex >= Weapons.Num())
+	if (NextWeaponIndex >= RangedWeapons.Num())
 	{
-		EquipWeapon(Weapons[0]);
+		EquipWeapon(RangedWeapons[0]);
 	}
-	else EquipWeapon(Weapons[NextWeaponIndex]);
+	else EquipWeapon(RangedWeapons[NextWeaponIndex]);
 }
 
-void ACustomCharacter::EquipWeapon(AWeapon* NewWeapon)
+void ACustomCharacter::EquipWeapon(ARangedWeapon* NewWeapon)
 {
-	if (Weapons.IsEmpty()) return;
+	if (RangedWeapons.IsEmpty()) return;
 
 	// Hides all non-equipped weapons and cancels any reloads.
-	for (int i = 0; i < Weapons.Num(); i++)
+	for (int i = 0; i < RangedWeapons.Num(); i++)
 	{
-		Weapons[i]->CancelReload();
+		RangedWeapons[i]->CancelReload();
 		
-		if (Weapons[i]->GetClass() != NewWeapon->GetClass())
+		if (RangedWeapons[i]->GetClass() != NewWeapon->GetClass())
 		{
-			Weapons[i]->SetActorHiddenInGame(true);
-			Weapons[i]->SetWeaponCollision(false);
+			RangedWeapons[i]->SetActorHiddenInGame(true);
+			RangedWeapons[i]->SetWeaponCollision(false);
 		}
 	}
 	
-	EquippedWeapon = NewWeapon;
-	EquippedWeapon->SetActorHiddenInGame(false);
-	EquippedWeapon->SetWeaponCollision(false);
+	EquippedRangedWeapon = NewWeapon;
+	EquippedRangedWeapon->SetActorHiddenInGame(false);
+	EquippedRangedWeapon->SetWeaponCollision(false);
 }
 
-void ACustomCharacter::PickupWeapon(AWeapon* NewWeapon)
+void ACustomCharacter::PickupWeapon(ARangedWeapon* NewWeapon)
 {
 	NewWeapon->SetActorHiddenInGame(true);
 	NewWeapon->SetWeaponCollision(false);
@@ -218,29 +218,29 @@ void ACustomCharacter::PickupWeapon(AWeapon* NewWeapon)
 	NewWeapon->SetActorRelativeLocation(FVector(0, 40, 100));
 	
 	// If there is room in the weapons array, add the weapon and return.
-	if (Weapons.Num() < MaxWeaponCapacity)
+	if (RangedWeapons.Num() < MaxWeaponCapacity)
 	{
-		Weapons.Add(NewWeapon);
-		if (EquippedWeapon == nullptr) EquipWeapon(NewWeapon);
+		RangedWeapons.Add(NewWeapon);
+		if (EquippedRangedWeapon == nullptr) EquipWeapon(NewWeapon);
 
 		return;
 	}
 
 	// Drops the currently equipped weapon.
-	if (EquippedWeapon)
+	if (EquippedRangedWeapon)
 	{
-		EquippedWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-		EquippedWeapon->SetActorLocation(GetMesh()->GetComponentLocation() + GetMesh()->GetForwardVector() * 20.0f + FVector(0, 0, 20));
-		EquippedWeapon->SetActorHiddenInGame(false);
-		EquippedWeapon->SetWeaponCollision(true);
+		EquippedRangedWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		EquippedRangedWeapon->SetActorLocation(GetMesh()->GetComponentLocation() + GetMesh()->GetForwardVector() * 20.0f + FVector(0, 0, 20));
+		EquippedRangedWeapon->SetActorHiddenInGame(false);
+		EquippedRangedWeapon->SetWeaponCollision(true);
 	}
 
 	// Replaces equipped weapon in the array with a new weapon. 
-	for (int32 i = 0; i < Weapons.Num(); i++)
+	for (int32 i = 0; i < RangedWeapons.Num(); i++)
 	{
-		if (Weapons[i]->GetClass() == EquippedWeapon->GetClass())
+		if (RangedWeapons[i]->GetClass() == EquippedRangedWeapon->GetClass())
 		{
-			Weapons[i] = NewWeapon;
+			RangedWeapons[i] = NewWeapon;
 			EquipWeapon(NewWeapon);
 		}
 	}
@@ -250,9 +250,9 @@ void ACustomCharacter::Interact()
 {
 	if (NearestInteractable == nullptr) return;
 	
-	if (NearestInteractable->FindNearestCommonBaseClass(AWeapon::StaticClass()) == AWeapon::StaticClass())
+	if (NearestInteractable->FindNearestCommonBaseClass(ARangedWeapon::StaticClass()) == ARangedWeapon::StaticClass())
 	{
-		AWeapon* NearestWeapon = Cast<AWeapon>(NearestInteractable);
+		ARangedWeapon* NearestWeapon = Cast<ARangedWeapon>(NearestInteractable);
 		if (NearestWeapon->CanBePickedUp()) PickupWeapon(NearestWeapon);
 	}
 }

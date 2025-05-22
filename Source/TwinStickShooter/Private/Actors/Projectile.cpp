@@ -22,7 +22,6 @@ AProjectile::AProjectile()
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 	ProjectileMovement->ProjectileGravityScale = 0;
 	ProjectileMovement->bRotationFollowsVelocity = true;
-		
 }
 
 // Called when the game starts or when spawned
@@ -38,14 +37,24 @@ void AProjectile::CheckCollision()
 	if (PreviousLocation == FVector::ZeroVector) PreviousLocation = GetActorLocation();
 	
 	FHitResult Hit;
-	DrawDebugSphereTraceSingle(GetWorld(), PreviousLocation, GetActorLocation(), Sphere->GetScaledSphereRadius(), EDrawDebugTrace::ForOneFrame, true,
-							   Hit, FColor::Red, FColor::Green, 0);
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(GetInstigator());
+	ActorsToIgnore.Add(Spawner);
+	UKismetSystemLibrary::SphereTraceSingle(GetWorld(), PreviousLocation, GetActorLocation(), Sphere->GetScaledSphereRadius(),
+		UEngineTypes::ConvertToTraceType(ECC_WorldDynamic), false, ActorsToIgnore,
+		EDrawDebugTrace::ForOneFrame, Hit, true);
 
 	PreviousLocation = GetActorLocation();
-
-	// if (Hit.GetActor()->GetClass() == GetClass()) return;
-	//
-	// if (Hit.bBlockingHit) DestroyProjectile();
+	
+	if (Hit.GetActor())
+	{
+		// If collided with another projectile ignore it.
+		if (Hit.GetActor()->GetClass() == GetClass()) return;
+		
+		Hit.GetActor()->TakeDamage(Damage, FPointDamageEvent(), GetInstigatorController(), GetInstigator());
+		
+		DestroyProjectile();
+	}
 }
 
 void AProjectile::DestroyProjectile()

@@ -6,6 +6,7 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Engine/DamageEvents.h"
 #include "Projectile.generated.h"
 
 UCLASS()
@@ -28,6 +29,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UProjectileMovementComponent* ProjectileMovement;
 
+	// The Actor that spawned this projectile.
+	UPROPERTY() AActor* Spawner;
+
 	UPROPERTY()
 	float Damage;
 
@@ -41,6 +45,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// Checks if the projectile has hit anything between its previous location and where it is currently.
 	UFUNCTION(BlueprintCallable)
 	void CheckCollision();
 
@@ -63,6 +68,9 @@ public:
 	USphereComponent* GetSphere() const { return Sphere; }
 
 	// ------ SETTERS ------
+
+	UFUNCTION(BlueprintCallable)
+	void SetSpawner(AActor* Actor) { Spawner = Actor; }
 
 	UFUNCTION(BlueprintCallable)
 	float SetDamage(const float NewDamage) { return Damage = NewDamage; }

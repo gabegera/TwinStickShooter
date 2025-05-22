@@ -12,6 +12,9 @@ void ACustomPlayerController::SetupPlayerInputComponent(UInputComponent* PlayerI
 	// You can bind to any of the trigger events here by changing the "ETriggerEvent" enum value
 	Input->BindAction(Input_Move, ETriggerEvent::Triggered, this, &ACustomPlayerController::Move);
 	Input->BindAction(Input_Dodge, ETriggerEvent::Triggered, this, &ACustomPlayerController::Dodge);
+
+	Input->BindAction(Input_LightAttack, ETriggerEvent::Triggered, this, &ACustomPlayerController::LightAttack);
+	Input->BindAction(Input_HeavyAttack, ETriggerEvent::Triggered, this, &ACustomPlayerController::HeavyAttack);
 	Input->BindAction(Input_Parry, ETriggerEvent::Triggered, this, &ACustomPlayerController::Parry);
 	
 	Input->BindAction(Input_Aim, ETriggerEvent::Triggered, this, &ACustomPlayerController::Aim);
@@ -25,6 +28,8 @@ void ACustomPlayerController::SetupPlayerInputComponent(UInputComponent* PlayerI
 	Input->BindAction(Input_NextWeapon, ETriggerEvent::Triggered, this, &ACustomPlayerController::EquipNextWeapon);
 
 	Input->BindAction(Input_Interact, ETriggerEvent::Triggered, this, &ACustomPlayerController::Interact);
+
+	
 }
 
 void ACustomPlayerController::BeginPlay()
@@ -47,7 +52,7 @@ void ACustomPlayerController::BeginPlay()
 
 void ACustomPlayerController::Move(const FInputActionInstance& Instance)
 {
-	if (GetWorldTimerManager().IsTimerActive(GetCustomCharacter()->GetDashTimer())) return;
+	if (GetWorldTimerManager().IsTimerActive(GetPlayerCharacter()->GetDashTimer())) return;
 	
 	FVector2D Value = Instance.GetValue().Get<FVector2D>();
 	MovementDirection = FVector(Value.Y, Value.X, 0);
@@ -63,7 +68,17 @@ void ACustomPlayerController::Move(const FInputActionInstance& Instance)
 
 void ACustomPlayerController::Dodge()
 {
-	GetCustomCharacter()->Dash(MovementDirection);
+	GetPlayerCharacter()->Dash(MovementDirection);
+}
+
+void ACustomPlayerController::LightAttack()
+{
+	GetPlayerCharacter()->LightAttack();
+}
+
+void ACustomPlayerController::HeavyAttack()
+{
+	GetPlayerCharacter()->HeavyAttack();
 }
 
 void ACustomPlayerController::Parry()
@@ -87,42 +102,42 @@ void ACustomPlayerController::Aim(const FInputActionInstance& Instance)
 
 void ACustomPlayerController::Shoot()
 {
-	if (GetCustomCharacter()->GetEquippedWeapon() && GetCustomCharacter()->GetEquippedWeapon()->GetAmmoInMagazine() <= 0 && ShouldReloadOnFire)
+	if (GetPlayerCharacter()->GetEquippedRangedWeapon() && GetPlayerCharacter()->GetEquippedRangedWeapon()->GetAmmoInMagazine() <= 0 && ShouldReloadOnFire)
 	{
-		GetCustomCharacter()->ReloadWeapon();
+		GetPlayerCharacter()->ReloadWeapon();
 	}
 	
-	GetCustomCharacter()->UseWeapon();
+	GetPlayerCharacter()->UseWeapon();
 }
 
 void ACustomPlayerController::ReleaseShoot()
 {
-	GetCustomCharacter()->StopUsingWeapon();
+	GetPlayerCharacter()->StopUsingWeapon();
 }
 
 void ACustomPlayerController::ReloadWeapon()
 {
-	GetCustomCharacter()->ReloadWeapon();
+	GetPlayerCharacter()->ReloadWeapon();
 }
 
 void ACustomPlayerController::EquipNextWeapon()
 {
-	GetCustomCharacter()->EquipNextWeapon();
+	GetPlayerCharacter()->EquipNextWeapon();
 }
 
 void ACustomPlayerController::Interact()
 {
-	GetCustomCharacter()->Interact();
+	GetPlayerCharacter()->Interact();
 }
 
 // ------ GETTERS ------
 
-ACustomCharacter* ACustomPlayerController::GetCustomCharacter()
+APlayerCharacter* ACustomPlayerController::GetPlayerCharacter()
 {
-	if (PossessedCustomCharacter == nullptr)
+	if (PossessedPlayerCharacter == nullptr)
 	{
-		PossessedCustomCharacter = Cast<ACustomCharacter>(GetCharacter());
+		PossessedPlayerCharacter = Cast<APlayerCharacter>(GetCharacter());
 	}
 
-	return PossessedCustomCharacter;
+	return PossessedPlayerCharacter;
 }

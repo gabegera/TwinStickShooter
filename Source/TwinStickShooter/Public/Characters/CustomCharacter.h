@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Actors/RangedWeapon.h"
 #include "Actors/Weapon.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
@@ -27,17 +28,17 @@ protected:
 
 	// ------ WEAPONS ------
 
-	UPROPERTY(EditAnywhere, Category="Weapons")
+	UPROPERTY(EditAnywhere, Category="RangedWeapons")
 	int32 MaxWeaponCapacity = 2;
 
-	UPROPERTY(EditAnywhere, Category="Weapons")
-	TSet<TSubclassOf<AWeapon>> StartingWeapons;
+	UPROPERTY(EditAnywhere, Category="RangedWeapons")
+	TSet<TSubclassOf<ARangedWeapon>> StartingRangedWeapons;
 	
 	UPROPERTY()
-	TArray<AWeapon*> Weapons;
+	TArray<ARangedWeapon*> RangedWeapons;
 
 	UPROPERTY()
-	AWeapon* EquippedWeapon = nullptr;
+	ARangedWeapon* EquippedRangedWeapon = nullptr;
 
 	// ------ DASH ------
 
@@ -107,17 +108,17 @@ public:
 
 	// Will spawn a new weapon and attach it to the character.
 	UFUNCTION(BlueprintCallable)
-	AWeapon* SpawnWeapon(TSubclassOf<AWeapon> WeaponToSpawn);
+	ARangedWeapon* SpawnRangedWeapon(TSubclassOf<ARangedWeapon> WeaponToSpawn);
 
-	// Equips the next weapon available in the Weapons Array.
+	// Equips the next weapon available in the RangedWeapons Array.
 	UFUNCTION(BlueprintCallable)
 	void EquipNextWeapon();
 	
 	UFUNCTION(BlueprintCallable)
-	void EquipWeapon(AWeapon* NewWeapon);
+	void EquipWeapon(ARangedWeapon* NewWeapon);
 
 	UFUNCTION(BlueprintCallable)
-	void PickupWeapon(AWeapon* NewWeapon);
+	void PickupWeapon(ARangedWeapon* NewWeapon);
 
 	UFUNCTION(BlueprintCallable)
 	void Interact();
@@ -131,5 +132,5 @@ public:
 	FTimerHandle GetDashTimer() { return DashTimer; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	AWeapon* GetEquippedWeapon() { return EquippedWeapon; }
+	ARangedWeapon* GetEquippedRangedWeapon() { return EquippedRangedWeapon; }
 };
