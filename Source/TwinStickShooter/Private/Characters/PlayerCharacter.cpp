@@ -3,6 +3,8 @@
 
 #include "Characters/PlayerCharacter.h"
 
+#include "Kismet/KismetMathLibrary.h"
+
 APlayerCharacter::APlayerCharacter()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -27,7 +29,28 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::UpdateCameraLocation()
 {
-	
+	const FVector CameraXYLocation = FVector(Camera->GetComponentLocation().X, Camera->GetComponentLocation().Y, 0.0f);
+	const FVector PlayerXYLocation = FVector(GetMesh()->GetComponentLocation().X, GetMesh()->GetComponentLocation().Y, 0.0f);
+
+	if (FVector::Distance(CameraXYLocation, PlayerXYLocation) > DistanceForCameraToFollow)
+	{
+		const FVector CamMovementDirection = UKismetMathLibrary::GetDirectionUnitVector(CameraXYLocation, PlayerXYLocation);
+		const float DeltaTime = GetWorld()->DeltaTimeSeconds;
+
+		Camera->SetWorldLocation(Camera->GetComponentLocation() + CamMovementDirection * CameraMoveSpeed * DeltaTime);
+		
+		// if (FVector::Distance(CameraXYLocation, PlayerXYLocation) < CameraMoveSpeed * DeltaTime)
+		// {
+		// 	Camera->SetWorldLocation(GetMesh()->GetComponentLocation() + FVector::UpVector * 2400.0f);
+		// }
+		// else
+		// {
+		// 	
+		// }
+
+		FVector ZHeight = FVector(Camera->GetComponentLocation().X, Camera->GetComponentLocation().Y, GetMesh()->GetComponentLocation().Z + 2400.0f);
+		Camera->SetWorldLocation(ZHeight);
+	}
 }
 
 void APlayerCharacter::LightAttack()

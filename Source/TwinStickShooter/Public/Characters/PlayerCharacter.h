@@ -74,6 +74,16 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* MeleeWeapon;
 
+	// ------ CAMERA ------ //
+
+	// How far away the camera has to be from the player before it'll move to where the player is.
+	UPROPERTY(EditAnywhere, Category="Camera")
+	float DistanceForCameraToFollow = 600.0f;
+
+	// How fast the camera will move back to the player position.
+	UPROPERTY(EditAnywhere, Category="Camera")
+	float CameraMoveSpeed = 1000.0f;
+
 	// ------ MELEE ------ //
 	
 	UPROPERTY(EditAnywhere, Category="Melee")
