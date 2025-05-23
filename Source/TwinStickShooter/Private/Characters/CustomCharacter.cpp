@@ -18,6 +18,38 @@ ACustomCharacter::ACustomCharacter()
 	SphereCollider->OnComponentEndOverlap.AddDynamic(this, &ACustomCharacter::OnOverlapEnd);
 }
 
+void ACustomCharacter::UpdateRotation()
+{
+	if (TargetRotation != FRotator::ZeroRotator)
+	{
+		float DeltaTime = GetWorld()->GetDeltaSeconds();
+		float CurrentYaw = GetMesh()->GetRelativeRotation().Clamp().Yaw;
+		float TargetYaw = TargetRotation.Clamp().Yaw;
+		
+		if (CurrentYaw < TargetYaw)
+		{
+			if (FMath::Abs(CurrentYaw - TargetYaw) < 180)
+			{
+				GetMesh()->SetRelativeRotation(GetMesh()->GetRelativeRotation() + FRotator(0, MaxRotationSpeed * DeltaTime, 0));
+			}
+			else GetMesh()->SetRelativeRotation(GetMesh()->GetRelativeRotation() + FRotator(0, -MaxRotationSpeed * DeltaTime, 0));
+		}
+		else
+		{
+			if (FMath::Abs(CurrentYaw - TargetYaw) < 180)
+			{
+				GetMesh()->SetRelativeRotation(GetMesh()->GetRelativeRotation() + FRotator(0, -MaxRotationSpeed * DeltaTime, 0));
+			}
+			else GetMesh()->SetRelativeRotation(GetMesh()->GetRelativeRotation() + FRotator(0, MaxRotationSpeed * DeltaTime, 0));
+		}
+
+		if (FMath::Abs(CurrentYaw - TargetYaw) < MaxRotationSpeed * DeltaTime)
+		{
+			GetMesh()->SetRelativeRotation(TargetRotation);
+		}
+	}
+}
+
 // Called when the game starts or when spawned
 void ACustomCharacter::BeginPlay()
 {
@@ -261,5 +293,7 @@ void ACustomCharacter::Interact()
 void ACustomCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	UpdateRotation();
 }
 

@@ -55,14 +55,17 @@ void ACustomPlayerController::Move(const FInputActionInstance& Instance)
 	if (GetWorldTimerManager().IsTimerActive(GetPlayerCharacter()->GetDashTimer())) return;
 	
 	FVector2D Value = Instance.GetValue().Get<FVector2D>();
-	MovementDirection = FVector(Value.Y, Value.X, 0);
-	
-	GetCharacter()->AddMovementInput(FVector::RightVector, Value.X);
-	GetCharacter()->AddMovementInput(FVector::ForwardVector, Value.Y);
+	FVector(Value.X, Value.Y, 0).ToDirectionAndLength(MovementDirection, MovementInputPercentage);
 
 	if (!isAiming)
+    {
+    	GetPlayerCharacter()->SetTargetRotation(FVector(Value.X, Value.Y, 0).Rotation());
+		GetPlayerCharacter()->AddMovementInput(GetPlayerCharacter()->GetMesh()->GetRightVector(), MovementInputPercentage);
+    }
+	else
 	{
-		GetCharacter()->GetMesh()->SetWorldRotation(FVector(Value.X, -Value.Y, 0).Rotation());
+		GetCharacter()->AddMovementInput(FVector::RightVector, Value.X);
+        GetCharacter()->AddMovementInput(FVector::ForwardVector, -Value.Y);
 	}
 }
 
@@ -93,10 +96,11 @@ void ACustomPlayerController::Aim(const FInputActionInstance& Instance)
 	if (Value.IsZero())
 	{
 		isAiming = false;
+		GetPlayerCharacter()->SetTargetRotation(FRotator::ZeroRotator);
 		return;
 	}
-	
-	GetCharacter()->GetMesh()->SetWorldRotation(FVector(Value.X, Value.Y, 0).Rotation());
+
+	GetPlayerCharacter()->SetTargetRotation(FVector(Value.X, Value.Y, 0).Rotation());
 	isAiming = true;
 }
 

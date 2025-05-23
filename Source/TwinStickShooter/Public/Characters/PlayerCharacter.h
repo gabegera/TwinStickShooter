@@ -92,6 +92,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	bool bShowDebugLogs = true;
 
+	virtual void BeginPlay() override;
+
+	void UpdateCameraLocation();
+
 public:
 
 	UFUNCTION(BlueprintCallable)

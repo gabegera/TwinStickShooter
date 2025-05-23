@@ -3,8 +3,6 @@
 
 #include "Characters/PlayerCharacter.h"
 
-#include "Components/CapsuleComponent.h"
-
 APlayerCharacter::APlayerCharacter()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
@@ -12,10 +10,24 @@ APlayerCharacter::APlayerCharacter()
 	MeleeWeapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Melee Mesh"));
 	MeleeWeapon->SetupAttachment(GetMesh());
 	
-	// Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
-	// Camera->SetupAttachment(GetCapsuleComponent());
-	// Camera->AddRelativeLocation(FVector(200, 0, 1200));
-	// Camera->bUsePawnControlRotation = false;
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+	Camera->SetupAttachment(GetRootComponent());
+	Camera->AddRelativeLocation(FVector(0, 0, 2400));
+	Camera->SetRelativeRotation(FRotator(0.0f, -85.0f, 0.0f));
+	Camera->bUsePawnControlRotation = false;
+}
+
+void APlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Camera->SetWorldRotation(FRotator(-85.0f, 0.0f, 0.0f));
+	// Camera->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+}
+
+void APlayerCharacter::UpdateCameraLocation()
+{
+	
 }
 
 void APlayerCharacter::LightAttack()
@@ -88,6 +100,8 @@ void APlayerCharacter::ResetCombo()
 void APlayerCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	UpdateCameraLocation();
 
 	if (bShowDebugLogs == true)
 	{

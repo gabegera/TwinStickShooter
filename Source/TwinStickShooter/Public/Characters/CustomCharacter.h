@@ -26,6 +26,18 @@ protected:
 	UPROPERTY()
 	AActor* NearestInteractable;
 
+	// ------ ROTATION ------
+
+	// How fast the character can rotate in degrees per second.
+	UPROPERTY(EditAnywhere, Category="Rotation")
+	float MaxRotationSpeed = 1080.0f;
+	
+	FRotator TargetRotation = FRotator::ZeroRotator;
+
+	// Rotates To Target Location at specified speed in the shortest rotation possible.
+	UFUNCTION(BlueprintCallable)
+	void UpdateRotation();
+
 	// ------ WEAPONS ------
 
 	UPROPERTY(EditAnywhere, Category="RangedWeapons")
@@ -133,4 +145,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	ARangedWeapon* GetEquippedRangedWeapon() { return EquippedRangedWeapon; }
+
+	// ------ SETTERS ------ //
+
+	UFUNCTION(BlueprintCallable)
+	FRotator SetTargetRotation(const FRotator NewTarget) { return TargetRotation = NewTarget; }
 };

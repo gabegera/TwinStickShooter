@@ -36,9 +36,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* Input_NextWeapon;
 	UPROPERTY(EditAnywhere, Category = "Input") UInputAction* Input_Interact;
 
+	// Between 0 and 1 how much the input is being triggered.
+	float MovementInputPercentage = 0.0f;
 	FVector MovementDirection = FVector::ZeroVector;
 
 	bool isAiming = false;
+	FRotator TargetAimRotation;
+
+	UPROPERTY(EditAnywhere)
+	float MaxRotationSpeed;
 
 	// If true, when the weapon's magazine is out of ammo it will reload when you try to fire the weapon.
 	UPROPERTY(EditAnywhere, Category = "Input")
